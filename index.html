@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word by Word Viewer</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-size: 2em;
+        }
+        .word {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .controls {
+            width: 80%;
+            margin-top: 20px;
+        }
+        .slider {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="word" id="word"></div>
+    <div class="controls">
+        <input type="range" id="progress" class="slider" min="0" max="100" value="0" >
+        <label for="speed">Speed (ms):</label>
+        <input type="number" id="speed" value="500" min="100" step="10">
+    </div>
+
+    <script>
+        // Function to fetch words from a file
+        async function fetchWords() {
+            const response = await fetch('words-2.txt');
+            const text = await response.text();
+            return text.match(/[a-zA-ZÀ-ú]+/g);
+        }
+
+
+
+        // Function to display words one by one
+        async function displayWords() {
+            const words = await fetchWords();
+            const wordElement = document.getElementById('word');
+            const progressElement = document.getElementById('progress');
+            const speedElement = document.getElementById('speed');
+            let index = 0;
+            let speed = parseInt(speedElement.value);
+
+            // Set max value of progress bar
+            progressElement.max = words.length - 1;
+
+            function showNextWord() {
+                if (index < words.length) {
+                    wordElement.textContent = words[index];
+                    progressElement.value = index;
+                    index++;
+                    setTimeout(showNextWord, speed);
+                } else {
+                    wordElement.textContent = "End of words!";
+                }
+            }
+
+            // Event listener to change speed
+            speedElement.addEventListener('input', (event) => {
+                speed = parseInt(event.target.value);
+            });
+
+            // Event listener to change word based on progress bar
+            progressElement.addEventListener('input', (event) => {
+                index = parseInt(event.target.value);
+                wordElement.textContent = words[index];
+            });
+
+            // Initialize word display
+            showNextWord();
+        }
+
+        displayWords();
+    </script>
+</body>
+</html>
